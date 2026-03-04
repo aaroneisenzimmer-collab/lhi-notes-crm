@@ -201,20 +201,21 @@
     text.style.color = '#f39c12';
 
     try {
-        // no-cors → browser won't block, but can't read response body
-        await fetch(SCRIPT_URL, { mode: 'no-cors' });
-        
-        light.style.background = '#2ecc71';
-        text.textContent = 'Connected (local mode – full data unavailable)';
-        text.style.color = '#27ae60';
-        
-        // Note: dropdown won't populate in local dev – works on hosted version
-    } catch (err) {
-        console.error('Connection check failed:', err);
-        light.style.background = '#e74c3c';
-        text.textContent = 'Connection failed';
-        text.style.color = '#c0392b';
-    }
+    const res = await fetch(SCRIPT_URL);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+    contacts = await res.json();  // now reads the array of objects
+
+    light.style.background = '#2ecc71';
+    text.textContent = `Connected (${contacts.length} contact${contacts.length === 1 ? '' : 's'})`;
+    text.style.color = '#27ae60';
+
+    updateDatalist();  // populates dropdown
+} catch (err) {
+    console.error('Load failed:', err);
+    light.style.background = '#e74c3c';
+    text.textContent = 'Connection failed';
+    text.style.color = '#c0392b';
 }
 
         function updateDatalist() {
